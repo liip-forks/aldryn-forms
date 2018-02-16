@@ -17,11 +17,12 @@ logger = logging.getLogger(__name__)
 class EmailValidationForm(FormPlugin):
     name = _('Form (Email validation)')
     model = EmailValidationFormPlugin
+    email_to_validate = None
 
     def form_valid(self, instance, request, form):
         form.instance.set_recipients(self.get_recipients(instance, form))
-        self.send_validation_email(instance, form)
         form.save()
+        self.send_validation_email(instance, form)
 
     def get_recipients(self, instance, form):
         users = instance.recipients.exclude(email='')
@@ -45,28 +46,37 @@ class EmailValidationForm(FormPlugin):
         return formClass
 
     def send_validation_email(self, instance, form):
+        self.email_to_validate = self.get_form_email(form)
 
-        email_fields = [(name, field) for name, field in form.fields.items()
-                       if field.__class__.__name__ == 'EmailField']
-        if len(email_fields) == 0:
+        if not self.email_to_validate:
             return
-
-        email_field_name = email_fields[0][0]
-        email = form.data[email_field_name]
 
         context = {
             'form_name': instance.name,
             'form_data': form.get_serialized_field_choices(),
             'form_plugin': instance,
-            'validation_link': 'TODO: Generate link',
+            'validation_link': self.generate_validation_link(instance, form),
         }
 
         send_mail(
-            recipients=email,
+            recipients=self.email_to_validate,
             context=context,
             template_base='email_validation/emails/validation',
             language=instance.language
         )
+
+    def get_form_email(self, form):
+        email_fields = [(name, field) for name, field in form.fields.items()
+                       if field.__class__.__name__ == 'EmailField']
+        if len(email_fields) == 0:
+            return None
+
+        email_field_name = email_fields[0][0]
+        return form.data[email_field_name]
+
+    def generate_validation_link(self, instance, form):
+        # TODO: generate link
+        return '{}-{}'.format(form.instance.pk, self.email_to_validate)
 
 
 plugin_pool.register_plugin(EmailValidationForm)
