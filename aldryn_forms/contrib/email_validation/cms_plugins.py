@@ -1,5 +1,6 @@
 import logging
 
+from django.core.signing import Signer
 from django.utils.translation import ugettext_lazy as _
 
 from aldryn_forms.cms_plugins import FormPlugin
@@ -18,6 +19,7 @@ class EmailValidationForm(FormPlugin):
     name = _('Form (Email validation)')
     model = EmailValidationFormPlugin
     email_to_validate = None
+    key_salt = "aldryn_forms.contrib.email_validation.EmailValidationForm"
 
     def form_valid(self, instance, request, form):
         form.instance.set_recipients(self.get_recipients(instance, form))
@@ -75,8 +77,13 @@ class EmailValidationForm(FormPlugin):
         return form.data[email_field_name]
 
     def generate_validation_link(self, instance, form):
-        # TODO: generate link
-        return '{}-{}'.format(form.instance.pk, self.email_to_validate)
+        signer = Signer()
+
+        token = '{}-{}'.format(str(form.instance.pk), self.email_to_validate)
+
+        signed_token = signer.sign(token)
+
+        return signed_token
 
 
 plugin_pool.register_plugin(EmailValidationForm)
