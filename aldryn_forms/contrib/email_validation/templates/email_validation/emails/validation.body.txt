@@ -1,0 +1,3 @@
+{% load i18n %}
+{% blocktrans %}Please validate your email by clicking this link:{% endblocktrans %}
+{{ validation_link }}
