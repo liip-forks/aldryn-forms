@@ -1,6 +1,10 @@
+import ast
+
 from django.core import signing
-from django.http import HttpResponse, HttpResponseBadRequest
-from django.shortcuts import get_object_or_404
+from django.http import HttpResponseBadRequest
+from django.shortcuts import get_object_or_404, render
+
+from emailit.api import send_mail
 
 from .models import EmailValidationFormSubmission
 
@@ -18,5 +22,21 @@ def validate_email(request, token):
     form_submission.is_valid = True
     form_submission.save()
 
-    # TODO: render template
-    return HttpResponse("Validated")
+    notification_context = {
+        'form_name': form_submission.name,
+        'form_data': ast.literal_eval(form_submission.data),
+        'form_plugin': form_submission,
+    }
+
+    send_mail(
+        recipients=form_submission.recipients,
+        context=notification_context,
+        template_base='email_validation/emails/notification',
+        language=form_submission.language,
+    )
+
+    context = {
+        'email': email
+    }
+
+    return render(request, 'email_validation/validated.html', context)
