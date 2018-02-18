@@ -1,5 +1,6 @@
 import logging
 
+from django.contrib.sites.shortcuts import get_current_site
 from django.core.signing import Signer
 from django.utils.translation import ugettext_lazy as _
 
@@ -24,7 +25,7 @@ class EmailValidationForm(FormPlugin):
     def form_valid(self, instance, request, form):
         form.instance.set_recipients(self.get_recipients(instance, form))
         form.save()
-        self.send_validation_email(instance, form)
+        self.send_validation_email(instance, request, form)
 
     def get_recipients(self, instance, form):
         users = instance.recipients.exclude(email='')
@@ -47,36 +48,43 @@ class EmailValidationForm(FormPlugin):
         )
         return formClass
 
-    def send_validation_email(self, instance, form):
+    def send_validation_email(self, instance, request, form):
         self.email_to_validate = self.get_form_email(form)
 
         if not self.email_to_validate:
             return
 
+        current_site = get_current_site(request)
+        domain = current_site.domain
+        use_https = request.is_secure()
+
         context = {
             'form_name': instance.name,
             'form_data': form.get_serialized_field_choices(),
             'form_plugin': instance,
-            'validation_link': self.generate_validation_link(instance, form),
+            'protocol': 'https' if use_https else 'http',
+            'domain': domain,
+            'validation_token': self.generate_validation_token(instance, form),
         }
 
         send_mail(
             recipients=self.email_to_validate,
             context=context,
             template_base='email_validation/emails/validation',
-            language=instance.language
+            site=get_current_site(request),
+            language=instance.language,
         )
 
     def get_form_email(self, form):
         email_fields = [(name, field) for name, field in form.fields.items()
-                       if field.__class__.__name__ == 'EmailField']
+                        if field.__class__.__name__ == 'EmailField']
         if len(email_fields) == 0:
             return None
 
         email_field_name = email_fields[0][0]
         return form.data[email_field_name]
 
-    def generate_validation_link(self, instance, form):
+    def generate_validation_token(self, instance, form):
         signer = Signer()
 
         token = '{}-{}'.format(str(form.instance.pk), self.email_to_validate)
