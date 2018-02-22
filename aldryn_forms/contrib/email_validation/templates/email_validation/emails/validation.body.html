@@ -1,5 +1,5 @@
 {% load i18n %}
 
 <p>{% blocktrans %}Please validate your email by clicking this link:{% endblocktrans %}</p>
-<p>{{ protocol }}://{{ domain }}{% url 'email_validation_validate_email' validation_token %}</p>
+<p><a href="{{ protocol }}://{{ domain }}{% url 'email_validation_validate_email' validation_token %}">{{ protocol }}://{{ domain }}{% url 'email_validation_validate_email' validation_token %}</a></p>
 
