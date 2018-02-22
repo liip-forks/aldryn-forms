@@ -28,7 +28,6 @@ class Migration(migrations.Migration):
             fields=[
             ],
             options={
-                'indexes': [],
                 'proxy': True,
             },
             bases=('aldryn_forms.formplugin',),
