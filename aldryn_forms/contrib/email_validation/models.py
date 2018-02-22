@@ -15,3 +15,7 @@ class EmailValidationFormSubmission(FormSubmission):
         verbose_name=_('is valid'),
         default=False
     )
+
+    class Meta:
+        verbose_name = _('Form submission with validated email')
+        verbose_name_plural = _('Form submissions with validated email')
