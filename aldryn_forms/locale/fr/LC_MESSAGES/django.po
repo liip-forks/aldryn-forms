@@ -360,6 +360,14 @@ msgstr "Formulaire (Validation d'email)"
 msgid "is valid"
 msgstr "validé"
 
+#: contrib/email_validation/models.py:20
+msgid "Form submission with validated email"
+msgstr "Soumission de formulaire avec email validé"
+
+#: contrib/email_validation/models.py:21
+msgid "Form submissions with validated email"
+msgstr "Soumissions de formulaire avec email validé"
+
 #: contrib/email_validation/templates/email_validation/emails/validation.body.html:3
 #: contrib/email_validation/templates/email_validation/emails/validation.body.txt:2
 msgid "Please validate your email by clicking this link:"
