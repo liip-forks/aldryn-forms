@@ -122,6 +122,8 @@ msgstr "Exporter les entrées de formulaire"
 #: boilerplates/legacy/templates/aldryn_forms/emails/notification.body.html:3
 #: boilerplates/legacy/templates/aldryn_forms/emails/notification.body.txt:2
 #: boilerplates/legacy/templates/aldryn_forms/emails/user/notification.body.txt:5
+#: contrib/email_validation/templates/email_validation/emails/notification.body.html:3
+#: contrib/email_validation/templates/email_validation/emails/notification.body.txt:2
 #: templates/aldryn_forms/email_notifications/emails/notification.body.html:9
 #: templates/aldryn_forms/email_notifications/emails/notification.body.txt:8
 #: templates/aldryn_forms/emails/notification.body.html:3
@@ -137,6 +139,7 @@ msgstr "Nom du formulaire : %(form_name)s"
 #: boilerplates/legacy/templates/aldryn_forms/email_notifications/emails/notification.subject.txt:1
 #: boilerplates/legacy/templates/aldryn_forms/emails/notification.subject.txt:1
 #: boilerplates/legacy/templates/aldryn_forms/emails/user/notification.subject.txt:1
+#: contrib/email_validation/templates/email_validation/emails/notification.subject.txt:1
 #: templates/aldryn_forms/email_notifications/emails/notification.subject.txt:1
 #: templates/aldryn_forms/emails/notification.subject.txt:1
 #: templates/aldryn_forms/emails/user/notification.subject.txt:1
@@ -348,6 +351,27 @@ msgstr "Veuillez indiquer un destinataire."
 #: contrib/email_notifications/notification.py:54
 msgid "Fields"
 msgstr "Champs"
+
+#: contrib/email_validation/cms_plugins.py:20
+msgid "Form (Email validation)"
+msgstr "Formulaire (Validation d'email)"
+
+#: contrib/email_validation/models.py:15
+msgid "is valid"
+msgstr "validé"
+
+#: contrib/email_validation/templates/email_validation/emails/validation.body.html:3
+#: contrib/email_validation/templates/email_validation/emails/validation.body.txt:2
+msgid "Please validate your email by clicking this link:"
+msgstr "Merci de cliquer sur le lien suivant afin de valider votre adresse email:"
+
+#: contrib/email_validation/templates/email_validation/emails/validation.subject.txt:1
+msgid "Email validation - %(form_name)s"
+msgstr "Validation de votre email - %(form_name)s"
+
+#: contrib/email_validation/templates/email_validation/validated.html:6
+msgid "Thank you, your email is now validated!"
+msgstr "Merci, votre email est maintenant validé!"
 
 #: forms.py:28
 #, python-format
