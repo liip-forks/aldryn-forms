@@ -1,5 +1,5 @@
 {% load i18n %}
 
-<p>{% trans "Please click" %} <a href="{{ protocol }}://{{ domain }}{% url 'email_validation_validate_email' validation_token %}">{% trans "here" %}</a> {% trans "to validate your email." %}</p>
-<p>{% blocktrans %}If this link doesn't work, please copy-paste the following into your browser address bar:{% endblocktrans %}</p>
+<p>{% blocktrans %}Please validate your email by clicking this link:{% endblocktrans %}</p>
 <p>{{ protocol }}://{{ domain }}{% url 'email_validation_validate_email' validation_token %}</p>
+
