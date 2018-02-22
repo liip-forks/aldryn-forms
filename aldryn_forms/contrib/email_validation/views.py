@@ -1,4 +1,5 @@
 import ast
+import json
 
 from django.core import signing
 from django.http import HttpResponseBadRequest
@@ -28,8 +29,10 @@ def validate_email(request, token):
         'form_plugin': form_submission,
     }
 
+    recipients = json.loads(form_submission.recipients)
+
     send_mail(
-        recipients=form_submission.recipients,
+        recipients=[user['email'] for user in recipients],
         context=notification_context,
         template_base='email_validation/emails/notification',
         language=form_submission.language,
