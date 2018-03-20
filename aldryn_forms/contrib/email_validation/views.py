@@ -17,7 +17,7 @@ def validate_email(request, token):
     except signing.BadSignature:
         return HttpResponseBadRequest()
 
-    form_pk, email = unsigned_token.split('-')
+    form_pk, email = unsigned_token.split('-', 1)
 
     form_submission = get_object_or_404(EmailValidationFormSubmission, pk=int(form_pk))
     form_submission.is_valid = True
