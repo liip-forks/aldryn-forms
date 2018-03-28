@@ -11,7 +11,7 @@ from cms.plugin_pool import plugin_pool
 from emailit.api import send_mail
 
 from .forms import EmailValidationFormSubmissionBaseForm
-from .models import EmailValidationFormPlugin
+from .models import EmailValidationFormPlugin, ValidateddEmail
 
 logger = logging.getLogger(__name__)
 
@@ -23,9 +23,15 @@ class EmailValidationForm(FormPlugin):
     key_salt = "aldryn_forms.contrib.email_validation.EmailValidationForm"
 
     def form_valid(self, instance, request, form):
-        form.instance.set_recipients(self.get_recipients(instance, form))
-        form.save()
-        self.send_validation_email(instance, request, form)
+        self.email_to_validate = self.get_form_email(form)
+
+        if ValidateddEmail.objects.filter(email=self.email_to_validate).exists():
+            form.instance.set_recipients(self.send_notifications(instance, form))
+            form.save()
+        else:
+            form.instance.set_recipients(self.get_recipients(instance, form))
+            form.save()
+            self.send_validation_email(instance, request, form)
 
     def get_recipients(self, instance, form):
         users = instance.recipients.exclude(email='')
