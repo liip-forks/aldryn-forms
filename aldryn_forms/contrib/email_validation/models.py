@@ -19,3 +19,24 @@ class EmailValidationFormSubmission(FormSubmission):
     class Meta:
         verbose_name = _('Form submission with validated email')
         verbose_name_plural = _('Form submissions with validated email')
+
+
+class ValidateddEmail(models.Model):
+    email = models.EmailField(
+        verbose_name=_('Email'),
+        null=True,
+        blank=True,
+        unique=True
+    )
+    date = models.DateField(
+        verbose_name=_('Date'),
+        auto_now=True
+    )
+    form_submission = models.ForeignKey(
+        'EmailValidationFormSubmission',
+        on_delete=models.CASCADE
+    )
+
+    class Meta:
+        verbose_name = _('Validated email')
+        verbose_name_plural = _('Validated emails')
