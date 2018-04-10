@@ -7,7 +7,7 @@ from django.shortcuts import get_object_or_404, render
 
 from emailit.api import send_mail
 
-from .models import EmailValidationFormSubmission, ValidateddEmail
+from .models import EmailValidationFormSubmission, ValidatedEmail
 
 
 def validate_email(request, token):
@@ -23,7 +23,7 @@ def validate_email(request, token):
     form_submission.is_valid = True
     form_submission.save()
 
-    validated_email = ValidateddEmail(
+    validated_email = ValidatedEmail(
         email=email,
         form_submission=form_submission
     )
