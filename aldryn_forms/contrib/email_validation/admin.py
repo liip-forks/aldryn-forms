@@ -3,7 +3,7 @@ from django.utils import six
 
 from aldryn_forms.admin import FormSubmissionAdmin
 
-from .models import EmailValidationFormSubmission
+from .models import EmailValidationFormSubmission, ValidatedEmail
 
 if six.PY2:
     str_dunder_method = '__unicode__'
@@ -27,4 +27,10 @@ class ValidatedFormSubmissionAdmin(FormSubmissionAdmin):
         return qs.filter(is_valid=True)
 
 
+class ValidatedEmailAdmin(admin.ModelAdmin):
+    def has_add_permission(self, request):
+        return False
+
+
 admin.site.register(EmailValidationFormSubmission, ValidatedFormSubmissionAdmin)
+admin.site.register(ValidatedEmail, ValidatedEmailAdmin)
