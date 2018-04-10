@@ -11,7 +11,7 @@ from cms.plugin_pool import plugin_pool
 from emailit.api import send_mail
 
 from .forms import EmailValidationFormSubmissionBaseForm
-from .models import EmailValidationFormPlugin, ValidateddEmail
+from .models import EmailValidationFormPlugin, ValidatedEmail
 
 logger = logging.getLogger(__name__)
 
@@ -25,7 +25,7 @@ class EmailValidationForm(FormPlugin):
     def form_valid(self, instance, request, form):
         self.email_to_validate = self.get_form_email(form)
 
-        if ValidateddEmail.objects.filter(email=self.email_to_validate).exists():
+        if ValidatedEmail.objects.filter(email=self.email_to_validate).exists():
             form.instance.set_recipients(self.send_notifications(instance, form))
             form.save()
         else:

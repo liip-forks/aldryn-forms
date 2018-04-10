@@ -21,7 +21,7 @@ class EmailValidationFormSubmission(FormSubmission):
         verbose_name_plural = _('Form submissions with validated email')
 
 
-class ValidateddEmail(models.Model):
+class ValidatedEmail(models.Model):
     email = models.EmailField(
         verbose_name=_('Email'),
         null=True,
