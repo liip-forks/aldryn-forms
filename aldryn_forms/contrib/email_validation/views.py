@@ -11,6 +11,9 @@ from .models import EmailValidationFormSubmission, ValidatedEmail
 
 
 def validate_email(request, token):
+    # DELETE ME AFTER USE
+    import ipdb; ipdb.set_trace()
+    # ###################
     signer = signing.Signer()
     try:
         unsigned_token = signer.unsign(token)
