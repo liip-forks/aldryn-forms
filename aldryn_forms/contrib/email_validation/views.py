@@ -20,29 +20,30 @@ def validate_email(request, token):
     form_pk, email = unsigned_token.split('-', 1)
 
     form_submission = get_object_or_404(EmailValidationFormSubmission, pk=int(form_pk))
-    form_submission.is_valid = True
-    form_submission.save()
+    if not form_submission.is_valid:
+        form_submission.is_valid = True
+        form_submission.save()
 
-    validated_email = ValidatedEmail(
-        email=email,
-        form_submission=form_submission
-    )
-    validated_email.save()
+        validated_email = ValidatedEmail(
+            email=email,
+            form_submission=form_submission
+        )
+        validated_email.save()
 
-    notification_context = {
-        'form_name': form_submission.name,
-        'form_data': ast.literal_eval(form_submission.data),
-        'form_plugin': form_submission,
-    }
+        notification_context = {
+            'form_name': form_submission.name,
+            'form_data': ast.literal_eval(form_submission.data),
+            'form_plugin': form_submission,
+        }
 
-    recipients = json.loads(form_submission.recipients)
+        recipients = json.loads(form_submission.recipients)
 
-    send_mail(
-        recipients=[user['email'] for user in recipients],
-        context=notification_context,
-        template_base='email_validation/emails/notification',
-        language=form_submission.language,
-    )
+        send_mail(
+            recipients=[user['email'] for user in recipients],
+            context=notification_context,
+            template_base='email_validation/emails/notification',
+            language=form_submission.language,
+        )
 
     context = {
         'email': email
