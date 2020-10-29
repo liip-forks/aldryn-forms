@@ -25,9 +25,9 @@ def validate_email(request, token):
             form_submission.is_valid = True
             form_submission.save()
 
-            validated_email = ValidatedEmail.objects.get_or_create(
+            ValidatedEmail.objects.get_or_create(
                 email=email,
-                form_submission=form_submission
+                defaults={"form_submission": form_submission},
             )
 
             notification_context = {
