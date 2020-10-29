@@ -29,7 +29,6 @@ def validate_email(request, token):
                 email=email,
                 form_submission=form_submission
             )
-            validated_email.save()
 
             notification_context = {
                 'form_name': form_submission.name,
