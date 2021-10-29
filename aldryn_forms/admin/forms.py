@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 from datetime import datetime, timedelta
 
 from django import forms
@@ -6,10 +5,11 @@ from django.conf import settings
 from django.contrib.admin.widgets import AdminDateWidget
 from django.utils import timezone
 from django.utils.text import slugify
-from django.utils.translation import ugettext, ugettext_lazy as _
+from django.utils.translation import ugettext
+from django.utils.translation import ugettext_lazy as _
 
-from .exporter import Exporter
 from ..models import FormSubmission
+from .exporter import Exporter
 
 
 def form_choices(modelClass):

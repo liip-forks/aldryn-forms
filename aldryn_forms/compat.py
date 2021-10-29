@@ -1,6 +1,3 @@
-# -*- coding: utf-8 -*-
-import django
-
 try:
     from collections import OrderedDict
 except ImportError:
@@ -11,15 +8,7 @@ try:
 except ImportError:
     from django.contrib.formtools.wizard.views import SessionWizardView  # noqa
 
-if django.VERSION < (1, 7):
-    from django.utils.module_loading import import_by_path
-    import_string = import_by_path
-    LTE_DJANGO_1_6 = True
-else:
-    from django.utils.module_loading import import_string  # noqa
-    LTE_DJANGO_1_6 = False  # noqa
-
-if django.VERSION < (1, 8):
-    LTE_DJANGO_1_7 = True
-else:
-    LTE_DJANGO_1_7 = False
+try:
+    from cms.utils.plugins import build_plugin_tree
+except ImportError:
+    from cms.utils.plugins import get_plugins_as_layered_tree as build_plugin_tree  # noqa

@@ -1,26 +1,28 @@
-# -*- coding: utf-8 -*-
-from collections import defaultdict, namedtuple, OrderedDict
-from functools import partial
 import json
 import warnings
+from collections import defaultdict
+from collections import namedtuple
+from functools import partial
+from typing import List
 
 from cms.models.fields import PageField
 from cms.models.pluginmodel import CMSPlugin
-from cms.utils.plugins import build_plugin_tree, downcast_plugins
+from cms.utils.plugins import downcast_plugins
 from django.conf import settings
+from django.core.exceptions import ValidationError
 from django.db import models
 from django.db.models.functions import Coalesce
-from django.utils.encoding import python_2_unicode_compatible
 from django.utils.functional import cached_property
-from django.utils.six import text_type
 from django.utils.translation import ugettext_lazy as _
 from djangocms_attributes_field.fields import AttributesField
-
 from filer.fields.folder import FilerFolderField
-from sizefield.models import FileSizeField
 
+from .compat import build_plugin_tree
 from .helpers import is_form_element
-from .utils import ALDRYN_FORMS_ACTION_BACKEND_KEY_MAX_SIZE, action_backend_choices
+from .sizefield.models import FileSizeField
+from .utils import ALDRYN_FORMS_ACTION_BACKEND_KEY_MAX_SIZE
+from .utils import action_backend_choices
+
 
 AUTH_USER_MODEL = getattr(settings, 'AUTH_USER_MODEL', 'auth.User')
 
@@ -88,7 +90,6 @@ class SerializedFormField(BaseSerializedFormField):
         return self.name.rpartition('_')[0]
 
 
-@python_2_unicode_compatible
 class BaseFormPlugin(CMSPlugin):
     FALLBACK_FORM_TEMPLATE = 'aldryn_forms/form.html'
     DEFAULT_FORM_TEMPLATE = getattr(
@@ -172,7 +173,19 @@ class BaseFormPlugin(CMSPlugin):
         on_delete=models.SET_NULL,
     )
 
-    cmsplugin_ptr = CMSPluginField()
+    is_enable_autofill_from_url_params = models.BooleanField(
+        default=False,
+        verbose_name=_("Enable autofill from url parameters"),
+        help_text=_(
+            "Eg if you open the form with a url that contains parameters as "
+            "'https://example.com/sub-page/?email=hello@example.com&name=Alex', "
+            "then the fields 'email' and 'name' are going to to be filled in automatically."
+        )
+    )
+
+    cmsplugin_ptr = CMSPluginField(
+        on_delete=models.CASCADE,
+    )
 
     class Meta:
         abstract = True
@@ -221,7 +234,7 @@ class BaseFormPlugin(CMSPlugin):
                 return element
         return
 
-    def get_form_fields(self):
+    def get_form_fields(self) -> List[FormField]:
         from .cms_plugins import Field
 
         fields = []
@@ -274,15 +287,16 @@ class BaseFormPlugin(CMSPlugin):
             fields.append(field)
         return fields
 
-    def get_form_field_name(self, field):
+    def get_form_field_name(self, field: 'FieldPluginBase') -> str:
         if self._form_field_key_cache is None:
             self._form_field_key_cache = {}
 
-        if field.pk not in self._form_field_key_cache:
-            fields_by_key = self.get_form_fields_by_name()
+        is_cache_needs_update = field.pk not in self._form_field_key_cache
+        if is_cache_needs_update:
+            form_fields: List[FormField] = self.get_form_fields()
+            for form_field in form_fields:
+                self._form_field_key_cache[form_field.plugin_instance.pk] = form_field.name
 
-            for name, _field in fields_by_key.items():
-                self._form_field_key_cache[_field.plugin_instance.pk] = name
         return self._form_field_key_cache[field.pk]
 
     def get_form_fields_as_choices(self):
@@ -290,11 +304,6 @@ class BaseFormPlugin(CMSPlugin):
 
         for field in fields:
             yield (field.name, field.label)
-
-    def get_form_fields_by_name(self):
-        fields = self.get_form_fields()
-        fields_by_name = OrderedDict((field.name, field) for field in fields)
-        return fields_by_name
 
     def get_form_elements(self):
         from .utils import get_nested_plugins
@@ -323,7 +332,6 @@ class BaseFormPlugin(CMSPlugin):
         return self._form_elements
 
 
-@python_2_unicode_compatible
 class FormPlugin(BaseFormPlugin):
 
     class Meta:
@@ -333,19 +341,19 @@ class FormPlugin(BaseFormPlugin):
         return self.name
 
 
-@python_2_unicode_compatible
 class FieldsetPlugin(CMSPlugin):
 
     legend = models.CharField(_('Legend'), max_length=255, blank=True)
     custom_classes = models.CharField(
         verbose_name=_('custom css classes'), max_length=255, blank=True)
-    cmsplugin_ptr = CMSPluginField()
+    cmsplugin_ptr = CMSPluginField(
+        on_delete=models.CASCADE,
+    )
 
     def __str__(self):
-        return self.legend or text_type(self.pk)
+        return self.legend or str(self.pk)
 
 
-@python_2_unicode_compatible
 class FieldPluginBase(CMSPlugin):
     name = models.CharField(
         _('Name'),
@@ -404,13 +412,15 @@ class FieldPluginBase(CMSPlugin):
 
     custom_classes = models.CharField(
         verbose_name=_('custom css classes'), max_length=255, blank=True)
-    cmsplugin_ptr = CMSPluginField()
+    cmsplugin_ptr = CMSPluginField(
+        on_delete=models.CASCADE,
+    )
 
     class Meta:
         abstract = True
 
     def __init__(self, *args, **kwargs):
-        super(FieldPluginBase, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         if self.plugin_type:
             attribute = 'is_%s' % self.field_type
             setattr(self, attribute, True)
@@ -424,6 +434,10 @@ class FieldPluginBase(CMSPlugin):
 
     def get_label(self):
         return self.label or self.placeholder_text
+
+    def clean(self):
+        if ' ' in self.name:
+            raise ValidationError(_('The "name" field cannot contain spaces.'))
 
 
 class FieldPlugin(FieldPluginBase):
@@ -469,7 +483,8 @@ class FileFieldPluginBase(FieldPluginBase):
     upload_to = FilerFolderField(
         verbose_name=_('Upload files to'),
         help_text=_('Select a folder to which all files submitted through '
-                    'this field will be uploaded to.')
+                    'this field will be uploaded to.'),
+        on_delete=models.CASCADE,
     )
     max_size = FileSizeField(
         verbose_name=_('Maximum file size'),
@@ -499,9 +514,8 @@ class ImageUploadFieldPlugin(FileFieldPluginBase):
     )
 
 
-@python_2_unicode_compatible
 class Option(models.Model):
-    field = models.ForeignKey(FieldPlugin, editable=False)
+    field = models.ForeignKey(FieldPlugin, editable=False, on_delete=models.CASCADE)
     value = models.CharField(_('Value'), max_length=255)
     default_value = models.BooleanField(_('Default'), default=False)
     position = models.PositiveIntegerField(_('Position'), blank=True)
@@ -525,18 +539,18 @@ class Option(models.Model):
         return super(Option, self).save(*args, **kwargs)
 
 
-@python_2_unicode_compatible
 class FormButtonPlugin(CMSPlugin):
     label = models.CharField(_('Label'), max_length=255)
     custom_classes = models.CharField(
         verbose_name=_('custom css classes'), max_length=255, blank=True)
-    cmsplugin_ptr = CMSPluginField()
+    cmsplugin_ptr = CMSPluginField(
+        on_delete=models.CASCADE,
+    )
 
     def __str__(self):
         return self.label
 
 
-@python_2_unicode_compatible
 class FormSubmission(models.Model):
     name = models.CharField(
         max_length=255,

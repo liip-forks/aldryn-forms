@@ -1,24 +1,20 @@
-# -*- coding: utf-8 -*-
 from email.utils import formataddr
 from functools import partial
 
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db import models
-from django.utils.encoding import python_2_unicode_compatible
-from django.utils.translation import ugettext, ugettext_lazy as _
+from django.utils.translation import ugettext
+from django.utils.translation import ugettext_lazy as _
 
 from djangocms_text_ckeditor.fields import HTMLField
+from emailit.api import construct_mail
 
 from aldryn_forms.helpers import get_user_name
 from aldryn_forms.models import FormPlugin
 
-from emailit.api import construct_mail
-
 from .helpers import (
-    get_email_template_name,
-    get_theme_template_name,
-    render_text
+    get_email_template_name, get_theme_template_name, render_text,
 )
 
 
@@ -30,7 +26,6 @@ EMAIL_THEMES = getattr(
 
 
 class EmailNotificationFormPlugin(FormPlugin):
-
     class Meta:
         proxy = True
 
@@ -55,7 +50,6 @@ class EmailNotificationFormPlugin(FormPlugin):
         return choices
 
 
-@python_2_unicode_compatible
 class EmailNotification(models.Model):
 
     class Meta:
@@ -84,6 +78,7 @@ class EmailNotification(models.Model):
         blank=True,
         null=True,
         limit_choices_to={'is_staff': True},
+        on_delete=models.CASCADE,
     )
     from_name = models.CharField(
         verbose_name=_('from name'),
@@ -92,6 +87,11 @@ class EmailNotification(models.Model):
     )
     from_email = models.CharField(
         verbose_name=_('from email'),
+        max_length=200,
+        blank=True
+    )
+    reply_to_email = models.CharField(
+        verbose_name=_('reply to email'),
         max_length=200,
         blank=True
     )
@@ -112,7 +112,8 @@ class EmailNotification(models.Model):
     )
     form = models.ForeignKey(
         to=EmailNotificationFormPlugin,
-        related_name='email_notifications'
+        related_name='email_notifications',
+        on_delete=models.CASCADE,
     )
 
     def __str__(self):
@@ -208,7 +209,11 @@ class EmailNotification(models.Model):
                 from_email = formataddr((from_name, from_email))
 
             kwargs['from_email'] = from_email
-            kwargs['reply_to'] = [from_email]
+
+        if self.reply_to_email:
+            reply_to_email_rendered = render(self.reply_to_email)
+            kwargs['reply_to'] = [reply_to_email_rendered]
+
         return kwargs
 
     def prepare_email(self, form):
