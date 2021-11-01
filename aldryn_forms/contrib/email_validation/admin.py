@@ -1,18 +1,12 @@
 from django.contrib import admin
-from django.utils import six
 
 from aldryn_forms.admin import FormSubmissionAdmin
 
 from .models import EmailValidationFormSubmission, ValidatedEmail
 
-if six.PY2:
-    str_dunder_method = '__unicode__'
-else:
-    str_dunder_method = '__str__'
-
 
 class ValidatedFormSubmissionAdmin(FormSubmissionAdmin):
-    list_display = [str_dunder_method, 'sent_at', 'language', 'is_valid']
+    list_display = ['__str__', 'sent_at', 'language', 'is_valid']
     readonly_fields = [
         'name',
         'get_data_for_display',
