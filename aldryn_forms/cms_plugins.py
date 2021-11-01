@@ -55,7 +55,7 @@ class FieldContainer(FormElement):
 
 class FormPlugin(FieldContainer):
     render_template = True
-    name = _('Form')
+    name = _('Form (simple)')
     module = _('Form types')
     model = models.FormPlugin
     form = FormPluginForm
@@ -876,6 +876,7 @@ plugin_pool.register_plugin(PhoneField)
 plugin_pool.register_plugin(NumberField)
 plugin_pool.register_plugin(ImageField)
 plugin_pool.register_plugin(Fieldset)
+plugin_pool.register_plugin(FormPlugin)
 plugin_pool.register_plugin(MultipleSelectField)
 plugin_pool.register_plugin(MultipleCheckboxSelectField)
 plugin_pool.register_plugin(RadioSelectField)
