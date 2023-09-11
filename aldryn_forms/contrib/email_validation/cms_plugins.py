@@ -2,7 +2,7 @@ import logging
 
 from django.contrib.sites.shortcuts import get_current_site
 from django.core.signing import Signer
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import gettext_lazy as _
 
 from aldryn_forms.cms_plugins import FormPlugin
 from aldryn_forms.helpers import get_user_name
