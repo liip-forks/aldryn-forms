@@ -4,6 +4,11 @@
 Aldryn Forms App
 ================
 
+Fork of `djangocms-aldryn-forms <https://github.com/CZ-NIC/djangocms-aldryn-forms>`_ 8.0.0, with the following additions:
+
+- Avoid dynamic migrations via settings-changes: https://github.com/CZ-NIC/djangocms-aldryn-forms/pull/6
+- Avoid dynamic migrations when settings.LANGUAGE_CODE changes
+
 Continuation of the deprecated project `Divio Aldryn Forms <https://github.com/divio/aldryn-forms>`_.
 
 Aldryn Forms allows you to build flexible HTML forms for your `Aldryn <http://aldryn.com>`_ and `django CMS
